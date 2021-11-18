@@ -1,0 +1,3 @@
+[submodule "c/unit"]
+	path = c/unit
+	url = https://github.com/nginx/unit.git

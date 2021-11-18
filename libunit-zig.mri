@@ -1,0 +1,5 @@
+create libunit-zig.a
+addlib c/unit/lib/libunit.a
+addlib zig-out/lib/libunit-zig.a
+save
+end
