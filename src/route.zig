@@ -100,8 +100,8 @@ pub fn route(req: unit.RequestInfo, routes: anytype) !void {
             inline while (i < args.len) : (i += 1) {
                 const T = @TypeOf(args[i]);
                 const variable = captures[i - 1];
-                args[i] = try switch (@typeInfo(T)) {
-                    .Int => std.fmt.parseInt(T, variable, 10),
+                args[i] = switch (@typeInfo(T)) {
+                    .Int => try std.fmt.parseInt(T, variable, 10),
                     .Pointer =>
                         if (T == []const u8) variable else error.unsupported_variable_type,
                     else => error.unsupported_variable_type

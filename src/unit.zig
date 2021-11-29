@@ -70,7 +70,19 @@ pub fn run(ctx: Context) !void {
 ///  be called once per request.
 pub fn writeHeaders(req: RequestInfo, status: u16, headers: anytype) !void {
     const H = @TypeOf(headers);
+    if (@typeInfo(H) == .Struct) {
+        try writeHeadersStruct(req, status, headers);
+    } else {
+        try writeHeadersDynamic(req, status, headers);
+    }
 
+    // The response can be sent now--the body can be still be written
+    //  with `response_write` and variants
+    try nxt_("response_send", .{req});
+}
+
+fn writeHeadersStruct(req: RequestInfo, status: u16, headers: anytype) !void {
+    const H = @TypeOf(headers);
     // We need to make a first pass to discover how many headers and
     //  how much memory they need
     var n_headers: usize = 0;
@@ -94,10 +106,30 @@ pub fn writeHeaders(req: RequestInfo, status: u16, headers: anytype) !void {
            &value[0], value.len
         });
     }
+}
 
-    // The response can be sent now--the body can be still be written
-    //  with `response_write` and variants
-    try nxt_("response_send", .{req});
+fn writeHeadersDynamic(req: RequestInfo, status: u16, headers: anytype) !void {
+    // We need to make a first pass to discover how many headers and
+    //  how much memory they need
+    var n_headers: usize = 0;
+    var headers_len: usize = 0;
+    for (headers) |header| {
+        headers_len += header.name.len + header.value.len;
+        n_headers += 1;
+    }
+
+    // We can now initialize a response with these sizes
+    try nxt_("response_init", .{req, status,
+        @intCast(u32, n_headers), @intCast(u32, headers_len)});
+
+    // Now run through and fill out with the header names and values
+    for (headers) |header| {
+        try nxt_("response_add_field", .{
+           req,
+           &header.name[0], @intCast(u8, header.name.len),
+           &header.value[0], @intCast(u32, header.value.len)
+        });
+    }
 }
 
 //================= IO =================

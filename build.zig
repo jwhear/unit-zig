@@ -1,5 +1,10 @@
 const std = @import("std");
 
+const pkg = std.build.Pkg{
+    .name = "unit",
+    .path = .{ .path="src/unit.zig" },
+};
+
 pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -17,7 +22,7 @@ pub fn build(b: *std.build.Builder) void {
     const lib = b.addStaticLibrary("unit-zig", "src/unit.zig");
     lib.setTarget(target);
     lib.setBuildMode(mode);
-    addUnit(lib);
+    addUnitBuildFlags(lib, ".");
     lib.install();
 
     // Combines libunit-zig.a with libunit.a to make a single fat lib
@@ -25,15 +30,11 @@ pub fn build(b: *std.build.Builder) void {
         //"ar", "-M", "libunit-zig.mri"
     //});
 
-    const pkg = std.build.Pkg{
-        .name = "unit",
-        .path = .{ .path="src/unit.zig" },
-    };
 
     const tests = b.addTest("src/main.zig");
     tests.setBuildMode(mode);
     tests.linkLibC();
-    addUnit(tests);
+    addUnitBuildFlags(tests, ".");
     //tests.linkLibrary(lib);
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&tests.step);
@@ -42,14 +43,14 @@ pub fn build(b: *std.build.Builder) void {
     demo.setTarget(target);
     demo.setBuildMode(mode);
     demo.addPackage(pkg);
-    addUnit(demo);
+    addUnitBuildFlags(demo, ".");
     demo.install();
 }
 
-pub fn addUnit(obj: *std.build.LibExeObjStep) void {
+pub fn addUnitBuildFlags(obj: *std.build.LibExeObjStep, comptime prefix: []const u8) void {
     obj.linkLibC();
-    obj.addIncludeDir("c/unit/src/");
-    obj.addIncludeDir("c/unit/build/");
-    obj.addLibPath("c/unit/build/");
+    obj.addIncludeDir(prefix++"/c/unit/src/");
+    obj.addIncludeDir(prefix++"/c/unit/build/");
+    obj.addLibPath(prefix++"/c/unit/build/");
     obj.linkSystemLibrary("unit");
 }

@@ -166,7 +166,9 @@ pub const Request = extern struct {
         return self._query.get()[0 .. self.query_length];
     }
 
-    ///
+    /// If you iterate this BE SURE TO DO SO BY REFERENCE!
+    ///   for (req.fields) |*field|
+    ///                     ^-this is very important!
     pub fn fields(self: *const Self) []const Field {
         var fields_ptr = @ptrCast([*]const Field, &self._fields_placeholder);        return fields_ptr[0 .. self.fields_count];
     }
