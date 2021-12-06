@@ -1,5 +1,11 @@
 #!/bin/bash
-cd c/unit/
+
+prefix="./"
+if [ $# -e 1 ]; then
+    prefix="$1"
+fi
+
+cd $prefix/c/unit/
 ./configure
 make libunit-install
 cd -
