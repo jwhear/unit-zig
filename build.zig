@@ -17,11 +17,14 @@ pub fn build(b: *std.build.Builder) void {
     const mode = b.standardReleaseOptions();
 
     //TODO build c/unit
-
+    const build_libunit = b.addSystemCommand(&[_][]const u8{
+        "./build_libunit.sh"
+    });
 
     const lib = b.addStaticLibrary("unit-zig", "src/unit.zig");
     lib.setTarget(target);
     lib.setBuildMode(mode);
+    lib.step.dependOn(&build_libunit.step);
     addUnitBuildFlags(lib, ".");
     lib.install();
 
