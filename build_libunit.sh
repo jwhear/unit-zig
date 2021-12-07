@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prefix="./"
-if [ $# -e 1 ]; then
+if [[ $# -eq 1 ]]; then
     prefix="$1"
 fi
 
