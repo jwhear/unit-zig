@@ -102,8 +102,8 @@ fn writeHeadersStruct(req: RequestInfo, status: u16, headers: anytype) !void {
         const value = @field(headers, header_name);
         try nxt_("response_add_field", .{
            req,
-           &header_name[0], header_name.len,
-           &value[0], value.len
+           &header_name[0], @intCast(u8, header_name.len),
+           &value[0], @intCast(u32, value.len)
         });
     }
 }
